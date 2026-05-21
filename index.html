@@ -351,12 +351,16 @@
 
             const startRad = (zoneStart * Math.PI) / 180;
             const endRad = (zoneEnd * Math.PI) / 180;
+            const innerRadius = 160 - 12;
+            const outerRadius = 160 + 12;
+
             ctx.beginPath();
-            ctx.lineCap = 'butt'; 
-            ctx.arc(200, 200, 160, startRad, endRad);
-            ctx.strokeStyle = '#0066cc';
-            ctx.lineWidth = 24;
-            ctx.stroke();
+            ctx.arc(200, 200, outerRadius, startRad, endRad, false);
+            ctx.arc(200, 200, innerRadius, endRad, startRad, true);
+            ctx.closePath();
+            
+            ctx.fillStyle = '#0066cc';
+            ctx.fill();
 
             const needleRad = (needleAngle * Math.PI) / 180;
             ctx.beginPath();
