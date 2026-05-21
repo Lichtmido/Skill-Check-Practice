@@ -255,7 +255,9 @@
 
             needleAngle += currentSpeed;
 
-           if (needleAngle >= 360) {
+            if (needleAngle >= 360) {
+                if (!isPlaying) return; 
+
                 if (!hasInputInCurrentLoop) {
                     handleFailure();
                     return;
