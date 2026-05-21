@@ -123,6 +123,28 @@
             text-align: right;
             font-family: monospace;
         }
+        .checkbox-group {
+            display: flex;
+            align-items: center;
+            margin-top: 12px;
+            padding-top: 10px;
+            border-top: 1px solid #333;
+        }
+        .checkbox-group label {
+            font-size: 0.85rem;
+            color: #ccc;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            width: 100%;
+        }
+        .checkbox-group input[type="checkbox"] {
+            cursor: pointer;
+            accent-color: #ff3333;
+            width: 16px;
+            height: 16px;
+        }
     </style>
 </head>
 <body>
@@ -155,6 +177,12 @@
             <input type="range" id="speed-set3" min="0.5" max="6.0" step="0.1" value="2.5">
             <span class="slider-val" id="val-set3">2.5</span>
         </div>
+        <div class="checkbox-group">
+            <label>
+                <input type="checkbox" id="lag-simulation">
+                <span>ラグシミュレート</span>
+            </label>
+        </div>
     </div>
 
     <div id="controls-guide">
@@ -174,6 +202,7 @@
         const valSet1 = document.getElementById('val-set1');
         const valSet2 = document.getElementById('val-set2');
         const valSet3 = document.getElementById('val-set3');
+        const lagSimulationInput = document.getElementById('lag-simulation');
 
         speedInputSet1.addEventListener('input', () => { valSet1.textContent = parseFloat(speedInputSet1.value).toFixed(1); });
         speedInputSet2.addEventListener('input', () => { valSet2.textContent = parseFloat(speedInputSet2.value).toFixed(1); });
@@ -253,7 +282,11 @@
         function gameLoop() {
             if (!isPlaying) return;
 
-            needleAngle += currentSpeed;
+            if (lagSimulationInput.checked && Math.random() < 0.03) {
+                needleAngle += currentSpeed * (Math.floor(Math.random() * 5) + 4);
+            } else {
+                needleAngle += currentSpeed;
+            }
 
             if (needleAngle >= 360) {
                 if (!isPlaying) return; 
@@ -297,6 +330,7 @@
         speedInputSet1.addEventListener('change', () => { speedInputSet1.blur(); });
         speedInputSet2.addEventListener('change', () => { speedInputSet2.blur(); });
         speedInputSet3.addEventListener('change', () => { speedInputSet3.blur(); });
+        lagSimulationInput.addEventListener('change', () => { lagSimulationInput.blur(); });
 
         function evaluateInput() {
             if (!isPlaying || hasInputInCurrentLoop) return;
