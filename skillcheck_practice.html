@@ -1,0 +1,391 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>スキルチェック練習アプリ</title>
+    <style>
+        * {
+            box-sizing: border-box;
+            user-select: none;
+        }
+        body {
+            background-color: #0b0f0c;
+            color: #00ff66;
+            font-family: 'Courier New', Courier, monospace;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            height: 100vh;
+            margin: 0;
+            overflow: hidden;
+        }
+        #info-panel {
+            margin-bottom: 20px;
+            text-align: center;
+        }
+        #status-message {
+            font-size: 1.4rem;
+            font-weight: bold;
+            text-shadow: 0 0 5px #00ff66;
+            height: 30px;
+            letter-spacing: 1px;
+        }
+        #progress-display {
+            font-size: 1.1rem;
+            color: #fff;
+            margin-top: 8px;
+            font-family: monospace;
+        }
+        #phone-container {
+            background-color: #1a1a1a;
+            border: 6px solid #333;
+            border-radius: 24px;
+            padding: 40px 30px;
+            box-shadow: 0 0 25px rgba(0, 0, 0, 0.9), inset 0 0 10px rgba(0,0,0,0.6);
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            background: radial-gradient(circle, #1f2521 0%, #0d110e 100%);
+        }
+        #canvas-container {
+            position: relative;
+            width: 200px;
+            height: 200px;
+        }
+        canvas {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            transform: rotate(-90deg);
+        }
+        #key-box {
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            width: 46px;
+            height: 46px;
+            background-color: #2a2a2a;
+            border: 2px solid #444;
+            border-radius: 8px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1.4rem;
+            font-weight: bold;
+            color: #fff;
+            box-shadow: 0 4px 6px rgba(0,0,0,0.5);
+        }
+        #controls-guide {
+            margin-top: 15px;
+            color: #666;
+            font-size: 0.85rem;
+            text-align: center;
+            line-height: 1.6;
+        }
+        #settings-panel {
+            margin-top: 20px;
+            background: rgba(40, 45, 42, 0.6);
+            border: 1px solid #333;
+            border-radius: 12px;
+            padding: 15px 20px;
+            width: 320px;
+        }
+        .slider-group {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            margin-bottom: 10px;
+        }
+        .slider-group:last-child {
+            margin-bottom: 0;
+        }
+        .slider-group label {
+            font-size: 0.85rem;
+            color: #ccc;
+            width: 70px;
+        }
+        .slider-group input[type="range"] {
+            flex: 1;
+            margin: 0 10px;
+            cursor: pointer;
+            accent-color: #00ff66;
+        }
+        .slider-val {
+            font-size: 0.85rem;
+            color: #00ff66;
+            width: 35px;
+            text-align: right;
+            font-family: monospace;
+        }
+    </style>
+</head>
+<body>
+
+    <div id="info-panel">
+        <div id="status-message">PRESS SPACE TO START</div>
+        <div id="progress-display">SET: 1/3 | STREAK: 0/3</div>
+    </div>
+
+    <div id="phone-container">
+        <div id="canvas-container">
+            <canvas id="skill-canvas" width="400" height="400"></canvas>
+            <div id="key-box">E</div>
+        </div>
+    </div>
+
+    <div id="settings-panel">
+        <div class="slider-group">
+            <label>スロー</label>
+            <input type="range" id="speed-set1" min="0.5" max="6.0" step="0.1" value="1.5">
+            <span class="slider-val" id="val-set1">1.5</span>
+        </div>
+        <div class="slider-group">
+            <label>ノーマル</label>
+            <input type="range" id="speed-set2" min="0.5" max="6.0" step="0.1" value="2.0">
+            <span class="slider-val" id="val-set2">2.0</span>
+        </div>
+        <div class="slider-group">
+            <label>ファスト</label>
+            <input type="range" id="speed-set3" min="0.5" max="6.0" step="0.1" value="2.5">
+            <span class="slider-val" id="val-set3">2.5</span>
+        </div>
+    </div>
+
+    <div id="controls-guide">
+        【開始】Space キー または 画面クリック<br>
+        【アクション】タイミングよく <b>E</b> キーをプッシュ
+    </div>
+
+    <script>
+        const canvas = document.getElementById('skill-canvas');
+        const ctx = canvas.getContext('2d');
+        const statusMessage = document.getElementById('status-message');
+        const progressDisplay = document.getElementById('progress-display');
+
+        const speedInputSet1 = document.getElementById('speed-set1');
+        const speedInputSet2 = document.getElementById('speed-set2');
+        const speedInputSet3 = document.getElementById('speed-set3');
+        const valSet1 = document.getElementById('val-set1');
+        const valSet2 = document.getElementById('val-set2');
+        const valSet3 = document.getElementById('val-set3');
+
+        speedInputSet1.addEventListener('input', () => { valSet1.textContent = parseFloat(speedInputSet1.value).toFixed(1); });
+        speedInputSet2.addEventListener('input', () => { valSet2.textContent = parseFloat(speedInputSet2.value).toFixed(1); });
+        speedInputSet3.addEventListener('input', () => { valSet3.textContent = parseFloat(speedInputSet3.value).toFixed(1); });
+
+        let currentSet = 1;
+        let currentStreak = 0;
+        let isPlaying = false;
+        let isWaitingStart = true;
+        let hasInputInCurrentLoop = false;
+
+        let needleAngle = 0;
+        let currentSpeed = 3; 
+        let zoneStart = 0;
+        let zoneEnd = 0;
+
+        let animationId = null;
+        let audioCtx = null;
+
+        const SPEED_MODES = {
+            SLOW: 1.5,
+            NORMAL: 2.0,
+            FAST: 2.5
+        };
+
+        function initApp() {
+            currentSet = 1;
+            currentStreak = 0;
+            isPlaying = false;
+            isWaitingStart = true;
+            needleAngle = 0;
+            hasInputInCurrentLoop = false;
+            
+            statusMessage.textContent = 'PRESS SPACE TO START';
+            statusMessage.style.color = '#00ff66';
+            updateProgressText();
+            drawStaticCircle();
+        }
+
+        function updateProgressText() {
+            progressDisplay.textContent = `SET: ${currentSet}/3 | STREAK: ${currentStreak}/3`;
+        }
+
+        function drawStaticCircle() {
+            ctx.clearRect(0, 0, canvas.width, canvas.height);
+            ctx.beginPath();
+            ctx.arc(200, 200, 160, 0, Math.PI * 2);
+            ctx.strokeStyle = '#2c322e';
+            ctx.lineWidth = 24;
+            ctx.stroke();
+        }
+
+        function playSound(type) {
+        }
+
+        function generateChallenge(isNewSet) {
+            needleAngle = 0;
+            hasInputInCurrentLoop = false;
+
+            if (isNewSet || currentStreak === 0) {
+                const currentSliderValues = [
+                    parseFloat(speedInputSet1.value), 
+                    parseFloat(speedInputSet2.value), 
+                    parseFloat(speedInputSet3.value)  
+                ];
+                currentSpeed = currentSliderValues[Math.floor(Math.random() * currentSliderValues.length)];
+            }
+
+            const zoneLength = Math.floor(Math.random() * 21) + 35;
+            
+            zoneStart = Math.floor(Math.random() * 221) + 60;
+            zoneEnd = zoneStart + zoneLength;
+
+            updateProgressText();
+        }
+
+        function gameLoop() {
+            if (!isPlaying) return;
+
+            needleAngle += currentSpeed;
+
+            if (needleAngle > zoneEnd && !hasInputInCurrentLoop) {
+                handleFailure();
+                return;
+            }
+
+            if (needleAngle >= 360) {
+                needleAngle -= 360;
+                hasInputInCurrentLoop = false;
+            }
+
+            ctx.clearRect(0, 0, canvas.width, canvas.height);
+
+            ctx.beginPath();
+            ctx.arc(200, 200, 160, 0, Math.PI * 2);
+            ctx.strokeStyle = '#2c322e';
+            ctx.lineWidth = 24;
+            ctx.stroke();
+
+            const startRad = (zoneStart * Math.PI) / 180;
+            const endRad = (zoneEnd * Math.PI) / 180;
+            ctx.beginPath();
+            ctx.arc(200, 200, 160, startRad, endRad);
+            ctx.strokeStyle = '#0066cc';
+            ctx.lineWidth = 24;
+            ctx.stroke();
+
+            const needleRad = (needleAngle * Math.PI) / 180;
+            ctx.beginPath();
+            ctx.lineWidth = 6;
+            ctx.strokeStyle = '#ff0033';
+            ctx.lineCap = 'round';
+            ctx.moveTo(200 + Math.cos(needleRad) * 140, 200 + Math.sin(needleRad) * 140);
+            ctx.lineTo(200 + Math.cos(needleRad) * 178, 200 + Math.sin(needleRad) * 178);
+            ctx.stroke();
+
+            animationId = requestAnimationFrame(gameLoop);
+        }
+
+        speedInputSet1.addEventListener('change', () => { speedInputSet1.blur(); });
+        speedInputSet2.addEventListener('change', () => { speedInputSet2.blur(); });
+        speedInputSet3.addEventListener('change', () => { speedInputSet3.blur(); });
+
+        function evaluateInput() {
+            if (!isPlaying || hasInputInCurrentLoop) return;
+            hasInputInCurrentLoop = true;
+
+            if (needleAngle >= zoneStart && needleAngle <= zoneEnd) {
+                handleSuccess();
+            } else {
+                handleFailure();
+            }
+        }
+
+        function handleSuccess() {
+            currentStreak++;
+
+            if (currentStreak >= 3) {
+                if (currentSet >= 3) {
+                    endGame(true);
+                } else {
+                    playSound('success');
+                    currentSet++;
+                    currentStreak = 0;
+                    generateChallenge(true);
+                }
+            } else {
+                playSound('success');
+                generateChallenge(false);
+            }
+        }
+
+        function handleFailure() {
+            cancelAnimationFrame(animationId);
+            playSound('fail');
+            
+            statusMessage.textContent = 'FAILED (PRESS SPACE TO RETRY)';
+            statusMessage.style.color = '#ff3333';
+            
+            currentSet = 1;
+            currentStreak = 0;
+            isPlaying = false;
+            isWaitingStart = true;
+
+            updateProgressText();
+        }
+
+        function endGame(isClear) {
+            isPlaying = false;
+            cancelAnimationFrame(animationId);
+
+            if (isClear) {
+                playSound('gameclear');
+                statusMessage.textContent = 'SUCCESS';
+                statusMessage.style.color = '#00ff66';
+                updateProgressText();
+            }
+
+            setTimeout(initApp, 3000);
+        }
+
+        function triggerStart() {
+            if (!isWaitingStart) return;
+            isWaitingStart = false;
+            isPlaying = true;
+            statusMessage.textContent = 'RUNNING';
+            statusMessage.style.color = '#00ff66';
+            
+            generateChallenge(true);
+            gameLoop();
+        }
+
+        window.addEventListener('keydown', (e) => {
+            if (isWaitingStart && e.key === ' ') {
+                e.preventDefault();
+                triggerStart();
+                return;
+            }
+
+            if (isPlaying && (e.key === 'e' || e.key === 'E')) {
+                e.preventDefault();
+                evaluateInput();
+            }
+        });
+
+        window.addEventListener('click', (e) => {
+            if (isWaitingStart && !e.target.closest('#settings-panel')) {
+                triggerStart();
+            }
+        });
+
+        window.onload = initApp;
+    </script>
+</body>
+</html>
