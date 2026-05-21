@@ -351,8 +351,8 @@
 
             const startRad = (zoneStart * Math.PI) / 180;
             const endRad = (zoneEnd * Math.PI) / 180;
-            const innerRadius = 160 - 12;
-            const outerRadius = 160 + 12;
+            const innerRadius = 160 - 12; 
+            const outerRadius = 160 + 12; 
 
             ctx.beginPath();
             ctx.arc(200, 200, outerRadius, startRad, endRad, false);
@@ -399,9 +399,16 @@
                     endGame(true);
                 } else {
                     playSound('success');
-                    currentSet++;
-                    currentStreak = 0;
-                    generateChallenge(true);
+                    isPlaying = false;
+                    cancelAnimationFrame(animationId);
+                    
+                    setTimeout(() => {
+                        currentSet++;
+                        currentStreak = 0;
+                        isPlaying = true;
+                        generateChallenge(true);
+                        gameLoop();
+                    }, 1000);
                 }
             } else {
                 playSound('success');
