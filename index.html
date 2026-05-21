@@ -255,12 +255,11 @@
 
             needleAngle += currentSpeed;
 
-            if (needleAngle > zoneEnd && !hasInputInCurrentLoop) {
-                handleFailure();
-                return;
-            }
-
-            if (needleAngle >= 360) {
+           if (needleAngle >= 360) {
+                if (!hasInputInCurrentLoop) {
+                    handleFailure();
+                    return;
+                }
                 needleAngle -= 360;
                 hasInputInCurrentLoop = false;
             }
