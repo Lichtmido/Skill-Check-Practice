@@ -352,6 +352,7 @@
             const startRad = (zoneStart * Math.PI) / 180;
             const endRad = (zoneEnd * Math.PI) / 180;
             ctx.beginPath();
+            ctx.lineCap = 'butt'; 
             ctx.arc(200, 200, 160, startRad, endRad);
             ctx.strokeStyle = '#0066cc';
             ctx.lineWidth = 24;
