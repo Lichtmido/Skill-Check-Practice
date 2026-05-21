@@ -223,7 +223,8 @@
         let audioCtx = null;
 
         let lagFrameCount = 0;
-        let nextLagTriggerFrame = 25; 
+        let nextLagTriggerFrame = 0;
+        let currentLagType = 'warp'; // 'warp' or 'freeze'
 
         const SPEED_MODES = {
             SLOW: 0.8,
@@ -262,11 +263,16 @@
         function playSound(type) {
         }
 
+        function setNextLagPoint() {
+            lagFrameCount = 0;
+            nextLagTriggerFrame = Math.floor(Math.random() * 66) + 15; 
+            currentLagType = Math.random() < 0.5 ? 'freeze' : 'warp'; 
+        }
+
         function generateChallenge(isNewSet) {
             needleAngle = 0;
             hasInputInCurrentLoop = false;
-            lagFrameCount = 0;
-            nextLagTriggerFrame = Math.floor(Math.random() * 25) + 20; 
+            setNextLagPoint();
 
             if (isNewSet || currentStreak === 0) {
                 const currentSliderValues = [
@@ -290,10 +296,19 @@
 
             if (lagSimulationInput.checked) {
                 lagFrameCount++;
-                if (lagFrameCount === nextLagTriggerFrame) {
-                    needleAngle += currentSpeed * 7; 
-                    lagFrameCount = 0;
-                    nextLagTriggerFrame = Math.floor(Math.random() * 30) + 25; 
+                if (lagFrameCount >= nextLagTriggerFrame) {
+                    if (currentLagType === 'warp') {
+                        const skipDistance = currentSpeed * (Math.floor(Math.random() * 9) + 4);
+                        needleAngle += skipDistance; 
+                        setNextLagPoint(); 
+                    } else if (currentLagType === 'freeze') {
+                        const freezeDuration = Math.floor(Math.random() * 5) + 3;
+                        if (lagFrameCount >= (nextLagTriggerFrame + freezeDuration)) {
+                            const catchupDistance = currentSpeed * freezeDuration;
+                            needleAngle += catchupDistance;
+                            setNextLagPoint();
+                        }
+                    }
                 } else {
                     needleAngle += currentSpeed;
                 }
