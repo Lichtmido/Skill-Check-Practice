@@ -163,17 +163,17 @@
 
     <div id="settings-panel">
         <div class="slider-group">
-            <label>スロー</label>
+            <label>Easy</label>
             <input type="range" id="speed-set1" min="0.5" max="6.0" step="0.1" value="1.4">
             <span class="slider-val" id="val-set1">1.4</span>
         </div>
         <div class="slider-group">
-            <label>ノーマル</label>
+            <label>Medium</label>
             <input type="range" id="speed-set2" min="0.5" max="6.0" step="0.1" value="1.8">
             <span class="slider-val" id="val-set2">1.8</span>
         </div>
         <div class="slider-group">
-            <label>ファスト</label>
+            <label>Hard</label>
             <input type="range" id="speed-set3" min="0.5" max="6.0" step="0.1" value="2.2">
             <span class="slider-val" id="val-set3">2.2</span>
         </div>
@@ -221,18 +221,38 @@
 
         let animationId = null;
         let audioCtx = null;
+        let alertBuffer = null;
+        let alertSource = null;
 
         let lagFrameCount = 0;
         let nextLagTriggerFrame = 0;
         let currentLagType = 'warp'; 
 
-        let shuffledSpeeds = [];
+        function initAudio() {
+            if (audioCtx) return;
+            audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+            fetch('alert.mp3')
+                .then(res => res.arrayBuffer())
+                .then(data => audioCtx.decodeAudioData(data))
+                .then(buf => { alertBuffer = buf; })
+                .catch(e => console.log('音源読み込みエラー:', e));
+        }
 
-        const SPEED_MODES = {
-            SLOW: 1.4,
-            NORMAL: 1.8,
-            FAST: 2.2
-        };
+        function playAlert() {
+            if (!alertBuffer || alertSource) return;
+            alertSource = audioCtx.createBufferSource();
+            alertSource.buffer = alertBuffer;
+            alertSource.loop = true;
+            alertSource.connect(audioCtx.destination);
+            alertSource.start(0);
+        }
+
+        function stopAlert() {
+            if (alertSource) {
+                alertSource.stop();
+                alertSource = null;
+            }
+        }
 
         function initApp() {
             currentSet = 1;
@@ -247,7 +267,6 @@
             statusMessage.style.color = '#00ff66';
             updateProgressText();
             drawStaticCircle();
-            shuffleSpeedArray();
         }
 
         function updateProgressText() {
@@ -272,30 +291,18 @@
             currentLagType = Math.random() < 0.5 ? 'freeze' : 'warp'; 
         }
 
-        function shuffleSpeedArray() {
-            const values = [
-                parseFloat(speedInputSet1.value),
-                parseFloat(speedInputSet2.value),
-                parseFloat(speedInputSet3.value)
-            ];
-            for (let i = values.length - 1; i > 0; i--) {
-                const j = Math.floor(Math.random() * (i + 1));
-                [values[i], values[j]] = [values[j], values[i]];
-            }
-            shuffledSpeeds = values;
-        }
-
         function generateChallenge(isNewSet) {
             needleAngle = 0;
             hasInputInCurrentLoop = false;
             setNextLagPoint(); 
 
-            if (currentSet === 1 && currentStreak === 0) {
-                shuffleSpeedArray();
-            }
-
             if (isNewSet || currentStreak === 0) {
-                currentSpeed = shuffledSpeeds[currentSet - 1];
+                const speeds = [
+                    parseFloat(speedInputSet1.value),
+                    parseFloat(speedInputSet2.value),
+                    parseFloat(speedInputSet3.value)
+                ];
+                currentSpeed = speeds[currentSet - 1];
             }
 
             const zoneLength = Math.floor(Math.random() * 21) + 35;
@@ -399,7 +406,6 @@
                 if (currentSet >= 3) {
                     endGame(true);
                 } else {
-                    playSound('success');
                     isPlaying = false;
                     cancelAnimationFrame(animationId);
                     
@@ -412,14 +418,13 @@
                     }, 1000);
                 }
             } else {
-                playSound('success');
                 generateChallenge(false);
             }
         }
 
         function handleFailure() {
             cancelAnimationFrame(animationId);
-            playSound('fail');
+            stopAlert();
             
             statusMessage.textContent = 'FAILED (PRESS SPACE TO RETRY)';
             statusMessage.style.color = '#ff3333';
@@ -435,9 +440,9 @@
         function endGame(isClear) {
             isPlaying = false;
             cancelAnimationFrame(animationId);
+            stopAlert();
 
             if (isClear) {
-                playSound('gameclear');
                 statusMessage.textContent = 'SUCCESS';
                 statusMessage.style.color = '#00ff66';
                 updateProgressText();
@@ -448,6 +453,8 @@
 
         function triggerStart() {
             if (!isWaitingStart) return;
+            initAudio();
+            playAlert();
             isWaitingStart = false;
             isPlaying = true;
             statusMessage.textContent = 'RUNNING';
