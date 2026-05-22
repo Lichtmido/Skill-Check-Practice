@@ -164,18 +164,18 @@
     <div id="settings-panel">
         <div class="slider-group">
             <label>Easy</label>
-            <input type="range" id="speed-set1" min="0.5" max="6.0" step="0.1" value="1.4">
-            <span class="slider-val" id="val-set1">1.4</span>
+            <input type="range" id="speed-set1" min="0.5" max="6.0" step="0.1" value="1.0">
+            <span class="slider-val" id="val-set1">1.0</span>
         </div>
         <div class="slider-group">
             <label>Medium</label>
-            <input type="range" id="speed-set2" min="0.5" max="6.0" step="0.1" value="1.8">
-            <span class="slider-val" id="val-set2">1.8</span>
+            <input type="range" id="speed-set2" min="0.5" max="6.0" step="0.1" value="1.5">
+            <span class="slider-val" id="val-set2">1.5</span>
         </div>
         <div class="slider-group">
             <label>Hard</label>
-            <input type="range" id="speed-set3" min="0.5" max="6.0" step="0.1" value="2.2">
-            <span class="slider-val" id="val-set3">2.2</span>
+            <input type="range" id="speed-set3" min="0.5" max="6.0" step="0.1" value="1.75">
+            <span class="slider-val" id="val-set3">1.75</span>
         </div>
         <div class="checkbox-group">
             <label>
@@ -206,7 +206,7 @@
 
         speedInputSet1.addEventListener('input', () => { valSet1.textContent = parseFloat(speedInputSet1.value).toFixed(1); });
         speedInputSet2.addEventListener('input', () => { valSet2.textContent = parseFloat(speedInputSet2.value).toFixed(1); });
-        speedInputSet3.addEventListener('input', () => { valSet3.textContent = parseFloat(speedInputSet3.value).toFixed(1); });
+        speedInputSet3.addEventListener('input', () => { valSet3.textContent = parseFloat(speedInputSet3.value).toFixed(2); });
 
         let currentSet = 1;
         let currentStreak = 0;
