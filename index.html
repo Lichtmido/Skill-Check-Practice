@@ -453,7 +453,6 @@
 
         function triggerStart() {
             if (!isWaitingStart) return;
-            initAudio();
             playAlert();
             isWaitingStart = false;
             isPlaying = true;
@@ -483,7 +482,10 @@
             }
         });
 
-        window.onload = initApp;
+        window.onload = () => {
+            initApp();
+            initAudio();
+        };
     </script>
 </body>
 </html>
