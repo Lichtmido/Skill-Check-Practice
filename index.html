@@ -307,7 +307,9 @@
             }
             
             const zoneLength = config[currentSet - 1].areaSize;
-            zoneStart = Math.floor(Math.random() * (360 - zoneLength));
+            // 45度のオフセットを設け、開始直後の反応を回避
+            const offset = 45; 
+            zoneStart = Math.floor(Math.random() * (360 - zoneLength - offset)) + offset;
             zoneEnd = zoneStart + zoneLength;
 
             updateProgressText();
