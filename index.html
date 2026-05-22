@@ -282,9 +282,6 @@
             ctx.stroke();
         }
 
-        function playSound(type) {
-        }
-
         function setNextLagPoint() {
             lagFrameCount = 0;
             nextLagTriggerFrame = Math.floor(Math.random() * 66) + 15; 
@@ -307,9 +304,11 @@
             }
             
             const zoneLength = config[currentSet - 1].areaSize;
-            // 45度のオフセットを設け、開始直後の反応を回避
-            const offset = 45; 
-            zoneStart = Math.floor(Math.random() * (360 - zoneLength - offset)) + offset;
+            
+            const minStart = 45;
+            const maxStart = 270 - zoneLength;
+            
+            zoneStart = Math.floor(Math.random() * (maxStart - minStart + 1)) + minStart;
             zoneEnd = zoneStart + zoneLength;
 
             updateProgressText();
