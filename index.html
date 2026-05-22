@@ -296,18 +296,18 @@
             hasInputInCurrentLoop = false;
             setNextLagPoint(); 
 
-            if (isNewSet || currentStreak === 0) {
-                const speeds = [
-                    parseFloat(speedInputSet1.value),
-                    parseFloat(speedInputSet2.value),
-                    parseFloat(speedInputSet3.value)
-                ];
-                currentSpeed = speeds[currentSet - 1];
-            }
+            const config = [
+                { areaSize: 50, speed: parseFloat(speedInputSet1.value) },
+                { areaSize: 40, speed: parseFloat(speedInputSet2.value) },
+                { areaSize: 25, speed: parseFloat(speedInputSet3.value) }
+            ];
 
-            const zoneLength = Math.floor(Math.random() * 21) + 35;
+            if (isNewSet || currentStreak === 0) {
+                currentSpeed = config[currentSet - 1].speed;
+            }
             
-            zoneStart = Math.floor(Math.random() * 221) + 60;
+            const zoneLength = config[currentSet - 1].areaSize;
+            zoneStart = Math.floor(Math.random() * (360 - zoneLength));
             zoneEnd = zoneStart + zoneLength;
 
             updateProgressText();
@@ -391,8 +391,7 @@
             if (!isPlaying || hasInputInCurrentLoop) return;
             hasInputInCurrentLoop = true;
 
-            const visualBuffer = 0; 
-            if (needleAngle >= (zoneStart - visualBuffer) && needleAngle <= (zoneEnd + visualBuffer)) {
+            if (needleAngle >= zoneStart && needleAngle <= zoneEnd) {
                 handleSuccess();
             } else {
                 handleFailure();
